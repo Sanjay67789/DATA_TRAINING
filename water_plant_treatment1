@@ -1,0 +1,86 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly.express as px
+
+# Load the CSV file and limit to the first 10000 rows
+file_path = r'D:\WATER_PLANT_DATA_SET\hidrico.csv'
+df = pd.read_csv(file_path).head(10000)
+
+# Print the column names for inspection
+print("Columns in the dataset:", df.columns)
+
+# Update the target columns with the actual parameter names
+target_columns = ['ph', 'conductivity', 'turbidity']  # Parameters to predict
+irrelevant_columns = ['_id', 'idAcueducto', 'idPlanta', 'idEstacion', 'fechaGeneracion']
+
+# Check if columns exist in the dataset before dropping
+columns_to_drop = [col for col in irrelevant_columns + target_columns if col in df.columns]
+
+# Features: using all columns except target parameters and irrelevant ones
+X = df.drop(columns=columns_to_drop)
+
+# Check for NaN or missing values in the feature set
+X.fillna(X.mean(), inplace=True)
+
+# Loop through each target variable to train and predict
+for target in target_columns:
+    if target not in df.columns:
+        print(f"Column '{target}' not found in the dataset.")
+        continue
+    
+    print(f"\nTraining model to predict: {target}")
+    
+    # Target variable
+    y = df[target]
+    
+    # Check for NaN or missing values in the target variable
+    if y.isna().sum() > 0:
+        print(f"Warning: NaN values found in the target '{target}'. Filling with mean.")
+        y.fillna(y.mean(), inplace=True)
+    
+    # Split the data into training and testing sets (80% train, 20% test)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    # Initialize and train a Random Forest Regressor model
+    model = RandomForestRegressor()
+    model.fit(X_train, y_train)
+    
+    # Make predictions
+    y_pred = model.predict(X_test)
+    
+    # Evaluate the model using Mean Squared Error (MSE)
+    mse = mean_squared_error(y_test, y_pred)
+    print(f"Mean Squared Error for {target}: {mse}")
+    
+    # Create a DataFrame for Actual vs Predicted values
+    comparison = pd.DataFrame({'Actual': y_test, 'Predicted': y_pred})
+    
+    # Plot Actual vs Predicted Values using Plotly for interactivity
+    fig = px.scatter(comparison, x='Actual', y='Predicted', 
+                     title=f'Actual vs Predicted {target} Values', 
+                     labels={'Actual': f'Actual {target}', 'Predicted': f'Predicted {target}'})
+    fig.add_shape(type='line', 
+                  x0=min(comparison['Actual']), y0=min(comparison['Actual']), 
+                  x1=max(comparison['Actual']), y1=max(comparison['Actual']), 
+                  line=dict(color='Red'))
+    
+    # Show the plot (this works best in Jupyter or interactive environments)
+    try:
+        fig.show()
+    except Exception as e:
+        print(f"Plotly Error: {e}. You might be running this in a non-interactive environment.")
+    
+    # Feature importance
+    feature_importance = pd.DataFrame({'Feature': X.columns, 'Importance': model.feature_importances_})
+    feature_importance = feature_importance.sort_values(by='Importance', ascending=False)
+    
+    # Plot Feature Importance using Seaborn
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x='Importance', y='Feature', data=feature_importance, 
+                hue='Feature', palette='viridis', dodge=False, legend=False)
+    plt.title(f'Feature Importance for {target}')
+    plt.show()
