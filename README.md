@@ -5,7 +5,9 @@ This repository is for personal practice in machine learning, specifically focus
 Files
 
   PROGRAM FILE :
-                waterplant.py: A Python script demonstrating recursion within a machine learning context.
+                water_plant_treatment.py: A Python script demonstrating recursion within a machine learning context.
+  
+  
   DATASET FILE :
                 W_P_T_DATASET.csv: The dataset used for testing the recursion concepts.
 How to Use
@@ -17,7 +19,7 @@ Clone the repository:
 Run the script:
   bash
     Copy code
-      python waterplant_treatment1.py
+      python water_plant_treatment1.py
 The script will load the data.csv file and perform basic recursive operations related to machine learning. You can modify it as needed to experiment with different approaches.
 
 Notes
