@@ -17,7 +17,7 @@ Clone the repository:
 Run the script:
   bash
     Copy code
-      python waterplant.py
+      python waterplant_treatment1.py
 The script will load the data.csv file and perform basic recursive operations related to machine learning. You can modify it as needed to experiment with different approaches.
 
 Notes
